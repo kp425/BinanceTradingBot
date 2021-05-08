@@ -1,4 +1,4 @@
-
+# Clones env files stored in a private github repo
 function get_env_files() {
     
     remote_url=$1
