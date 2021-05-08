@@ -1,0 +1,15 @@
+.env
+.gitignore
+.ignore
+README.md
+__init__.py
+run.py
+settings.py
+setup.py
+__pycache__/run.cpython-37.pyc
+__pycache__/settings.cpython-37.pyc
+binance_bot.egg-info/PKG-INFO
+binance_bot.egg-info/SOURCES.txt
+binance_bot.egg-info/dependency_links.txt
+binance_bot.egg-info/top_level.txt
+env/dev.env
