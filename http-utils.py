@@ -9,7 +9,7 @@ import time
 API_KEY = config.API_KEY
 SECRET = config.SECRET_KEY
 BASE_URL = config.API
-STREAM_URL = config.STREAM
+
 
 def hashing(query_string):
     return hmac.new(SECRET.encode('utf-8'), query_string.encode('utf-8'), hashlib.sha256).hexdigest()
@@ -54,14 +54,24 @@ def send_public_request(url_path, payload={}):
     response = dispatch_request('GET')(url=url)
     return response
 
-# params = {
-#     "symbol": "BNBUSDT",
-#     "side": "BUY",
-#     "type": "LIMIT",
-#     "timeInForce": "GTC",
-#     "quantity": 1,
-#     "price": "20"
-# }
+# response = send_signed_request('GET', '/v3/account')
+# print(json.dumps(response, indent=1))
+
+# response = send_public_request('/v3/exchangeInfo')
+
+# print(json.dumps(response, indent=2))
+
+# params = {  
+#             'symbol':'LTCBTC',
+#             'side':'BUY',
+#             'type': 'LIMIT',
+#             'timeInForce':	'GTC',
+#             'quantity': 1,
+#             'price':  500,
+#             'recvWindow':5000
+#         }
+
+# response = send_signed_request("POST" , '/v3/order', params)
 
 
 
