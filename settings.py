@@ -9,7 +9,7 @@ class DevConfig:
         load_dotenv(self.env_path)
         self.API_KEY = os.environ.get("API_KEY")
         self.SECRET_KEY = os.environ.get("SECRET_KEY")
-        self.API = "https://testnet.binance.vision/api"
+        self.API_URL = "https://testnet.binance.vision"
         self.WS = "wss://testnet.binance.vision/ws"
         self.STREAM = "wss://testnet.binance.vision/stream"
 

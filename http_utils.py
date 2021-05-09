@@ -8,7 +8,7 @@ import time
 
 API_KEY = config.API_KEY
 SECRET = config.SECRET_KEY
-BASE_URL = config.API
+BASE_URL = config.API_URL
 
 
 def hashing(query_string):
@@ -54,24 +54,54 @@ def send_public_request(url_path, payload={}):
     response = dispatch_request('GET')(url=url)
     return response
 
-# response = send_signed_request('GET', '/v3/account')
-# print(json.dumps(response, indent=1))
+if __name__ == "__main__":
 
-# response = send_public_request('/v3/exchangeInfo')
 
-# print(json.dumps(response, indent=2))
+    # get klines
+    response = send_public_request('/api/v3/klines' , {"symbol": "BTCUSDT", "interval": "1d"})
+    print(response)
 
-# params = {  
-#             'symbol':'LTCBTC',
-#             'side':'BUY',
-#             'type': 'LIMIT',
-#             'timeInForce':	'GTC',
-#             'quantity': 1,
-#             'price':  500,
-#             'recvWindow':5000
-#         }
 
-# response = send_signed_request("POST" , '/v3/order', params)
+    ### USER_DATA endpoints, call send_signed_request #####
+    # get account informtion
+    # if you can see the account details, then the API key/secret is correct
+    response = send_signed_request('GET', '/api/v3/account')
+    print(response)
+
+
+    # # place an order
+    # if you see order response, then the parameters setting is correct
+    params = {
+    "symbol": "BNBUSDT",
+    "side": "BUY",
+    "type": "LIMIT",
+    "timeInForce": "GTC",
+    "quantity": 1,
+    "price": "20"
+    }
+    response = send_signed_request('POST', '/api/v3/order', params)
+    print(response)
+
+
+    # transfer funds
+    params = {
+    "fromEmail": "",
+    "toEmail": "",
+    "asset": "USDT",
+    "amount": "0.1"
+    }
+    response = send_signed_request('POST', '/wapi/v3/sub-account/transfer.html', params)
+    print(response)
+
+
+    # New Future Account Transfer (FUTURES)
+    params = {
+    "asset": "USDT",
+    "amount": 0.01,
+    "type": 2
+    }
+    response = send_signed_request('POST', '/sapi/v1/futures/transfer', params)
+    print(response)
 
 
 

@@ -3,10 +3,9 @@ from settings import config
 import json
 import asyncio
 import aiohttp
-import websockets
 
-SOCKET_URL = config.WS
-STREAM_URL = config.STREAM
+
+BASE_URL = config.API_URL
 
 '''
 A single connection can listen to a maximum of 1024 streams 
@@ -15,15 +14,17 @@ A single connection can listen to a maximum of 1024 streams
 
 async def live_data(stream):
     if "/" in stream:
-        uri = STREAM_URL+"/?streamsp={}".format(stream)
+        uri = f"{BASE_URL}/stream?streams={stream}"
     else:
-        uri = SOCKET_URL+"/{}".format(stream)
+        uri = f"{BASE_URL}/ws/{stream}"
     print(uri)
     async with aiohttp.ClientSession() as session:
         ws  = await session.ws_connect(uri)
         while True:
             data = await ws.receive()
             print(data)
+
+
 
 if __name__ == "__main__":
 
@@ -34,9 +35,7 @@ if __name__ == "__main__":
 
     loop.run_until_complete(asyncio.gather(*coroutines))
 
-# loop.run_until_complete(live_data('btcusdt@aggTrade'))
-# loop.run_until_complete(live_data('btcusdt@aggTrade/btcusdt@depth'))
-# loop.run_until_complete(live_data('btc'))
+
 
 
 
