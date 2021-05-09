@@ -16,7 +16,8 @@ def place_order():
     "type": "LIMIT",
     "timeInForce": "GTC",
     "quantity": 1,
-    "price": "20"
+    "price": "20",
+    "recWindow":"20000"
     }
     response = send_signed_request('POST', '/api/v3/order', params)
     print(response)
