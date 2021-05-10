@@ -1,5 +1,6 @@
 from settings import config
 import requests
+from requests.auth import HTTPBasicAuth
 import hashlib
 import hmac
 import json
@@ -18,7 +19,7 @@ def get_timestamp():
     return int(time.time() * 1000)
 
 
-def dispatch_request(http_method):
+def dispatch_request1(http_method):
     session = requests.Session()
     session.headers.update({
         'Content-Type': 'application/json;charset=utf-8',
@@ -30,6 +31,22 @@ def dispatch_request(http_method):
         'PUT': session.put,
         'POST': session.post,
     }.get(http_method, 'GET')
+
+def dispatch_request(http_method):
+    session = requests.Session()
+    print(API_KEY)
+    session.headers.update({
+        'Content-Type': 'application/json;charset=utf-8',
+        'X-MBX-APIKEY': API_KEY,
+    })
+    print(session.headers)
+    return {
+        'GET': session.get,
+        'DELETE': session.delete,
+        'PUT': session.put,
+        'POST': session.post,
+    }.get(http_method, 'GET')
+
 
 def send_signed_request(http_method, url_path, payload={}):
     query_string = urlencode(payload, True)
