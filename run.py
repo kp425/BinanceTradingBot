@@ -23,11 +23,4 @@ def place_order():
     response = send_signed_request('POST', '/api/v3/order', params)
     print(response)
 
-place_order()
-
-
-
-
-
-
 

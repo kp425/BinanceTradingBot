@@ -1,15 +1,17 @@
-from settings import config
-import requests
-from requests.auth import HTTPBasicAuth
+import aiohttp
+import asyncio
+import argparse
 import hashlib
 import hmac
 import json
 from urllib.parse import urlencode
 import time
+from settings import config
 
 API_KEY = config.API_KEY
 SECRET = config.SECRET_KEY
 BASE_URL = config.API_URL
+
 
 
 def hashing(query_string):
@@ -19,8 +21,7 @@ def get_timestamp():
     return int(time.time() * 1000) 
 
 
-def dispatch_request1(http_method):
-    session = requests.Session()
+def dispatch_request(session, http_method):
     session.headers.update({
         'Content-Type': 'application/json;charset=utf-8',
         'X-MBX-APIKEY': API_KEY
@@ -32,23 +33,8 @@ def dispatch_request1(http_method):
         'POST': session.post,
     }.get(http_method, 'GET')
 
-def dispatch_request(http_method):
-    session = requests.Session()
-    print(API_KEY)
-    session.headers.update({
-        'Content-Type': 'application/json;charset=utf-8',
-        'X-MBX-APIKEY': API_KEY,
-    })
-    print(session.headers)
-    return {
-        'GET': session.get,
-        'DELETE': session.delete,
-        'PUT': session.put,
-        'POST': session.post,
-    }.get(http_method, 'GET')
 
-
-def send_signed_request(http_method, url_path, payload={}):
+async def send_signed_request(session, http_method, url_path, payload={}):
     query_string = urlencode(payload, True)
     if query_string:
         query_string = "{}&timestamp={}".format(query_string, get_timestamp())
@@ -58,32 +44,48 @@ def send_signed_request(http_method, url_path, payload={}):
     url = BASE_URL + url_path + '?' + query_string + '&signature=' + hashing(query_string)
     print("{} {}".format(http_method, url))
     params = {'url': url, 'params': {}}
-    response = dispatch_request(http_method)(**params)
+    response = await dispatch_request(session, http_method)(**params)
     return response
 
-
-def send_public_request(url_path, payload={}):
+async def send_public_request(session, url_path, payload={}):
     query_string = urlencode(payload, True)
     url = BASE_URL + url_path
     if query_string:
         url = url + '?' + query_string
     print("{}".format(url))
-    response = dispatch_request('GET')(url=url)
+    response = await dispatch_request(session, 'GET')(url=url)
     return response
 
-if __name__ == "__main__":
+async def test_signed_request():
+    params = {  "symbol":"BNBUSDT", 
+                "side":"BUY",
+                "type":"LIMIT",
+                "quantity":"1",
+                "timeInForce":"GTC",
+                "price":"200"
+            }
+    async with aiohttp.ClientSession() as session:
+        resp = await send_signed_request(session, "POST", "/api/v3/order", params)
+        print(resp.status)
+        print(resp)
+        return resp
 
+async def test_public_request():
+    pass
 
+def test():
+
+    session = aiohttp.ClientSession()
     # get klines
-    response = send_public_request('/api/v3/klines' , {"symbol": "BTCUSDT", "interval": "1d"})
-    print(response)
+    klines = send_public_request(session, '/api/v3/klines' , {"symbol": "BTCUSDT", "interval": "1d"})
+    # print(response)
 
 
     ### USER_DATA endpoints, call send_signed_request #####
     # get account informtion
     # if you can see the account details, then the API key/secret is correct
-    response = send_signed_request('GET', '/api/v3/account')
-    print(response)
+    account = send_signed_request(session, 'GET', '/api/v3/account')
+    # print(response)
 
 
     # # place an order
@@ -94,10 +96,10 @@ if __name__ == "__main__":
     "type": "LIMIT",
     "timeInForce": "GTC",
     "quantity": 1,
-    "price": "20"
+    "price": "200"
     }
-    response = send_signed_request('POST', '/api/v3/order', params)
-    print(response)
+    order = send_signed_request(session, 'POST', '/api/v3/order', params)
+    # print(response)
 
 
     # transfer funds
@@ -107,8 +109,8 @@ if __name__ == "__main__":
     "asset": "USDT",
     "amount": "0.1"
     }
-    response = send_signed_request('POST', '/wapi/v3/sub-account/transfer.html', params)
-    print(response)
+    sub_transfer = send_signed_request(session, 'POST', '/wapi/v3/sub-account/transfer.html', params)
+    # print(response)
 
 
     # New Future Account Transfer (FUTURES)
@@ -117,8 +119,25 @@ if __name__ == "__main__":
     "amount": 0.01,
     "type": 2
     }
-    response = send_signed_request('POST', '/sapi/v1/futures/transfer', params)
-    print(response)
+    transfer = send_signed_request(session, 'POST', '/sapi/v1/futures/transfer', params)
+    session.close()
+
+    loop = asyncio.get_event_loop()
+
+    coroutines = [klines, account, order, sub_transfer, transfer]
+
+    loop.run_until_complete(asyncio.gather(*coroutines))
+
+    
+
+
+if __name__ == '__main__':
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument('url', type=str)
+    # args = parser.parse_args()
+    # print(args.url)
+    
+    test()
 
 
 
