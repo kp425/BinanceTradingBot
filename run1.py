@@ -7,12 +7,20 @@ import json
 from urllib.parse import urlencode
 import time
 from settings import config
+import logging
 
 API_KEY = config.API_KEY
 SECRET = config.SECRET_KEY
 BASE_URL = config.API_URL
 
-
+import functools
+def print_fn(func):
+    @functools.wraps(func)
+    async def _print_fn(*args, **kwargs):
+        response = await func(*args, **kwargs)
+        print(response)
+        print(response.status)
+    return _print_fn
 
 def hashing(query_string):
     return hmac.new(SECRET.encode('utf-8'), query_string.encode('utf-8'), hashlib.sha256).hexdigest()
@@ -33,27 +41,29 @@ def dispatch_request(session, http_method):
         'POST': session.post,
     }.get(http_method, 'GET')
 
-
+@print_fn
 async def send_signed_request(session, http_method, url_path, payload={}):
     query_string = urlencode(payload, True)
     if query_string:
         query_string = "{}&timestamp={}".format(query_string, get_timestamp())
     else:
         query_string = 'timestamp={}'.format(get_timestamp())
-    print(url_path)
     url = BASE_URL + url_path + '?' + query_string + '&signature=' + hashing(query_string)
-    print("{} {}".format(http_method, url))
+    # print("{} {}".format(http_method, url))
     params = {'url': url, 'params': {}}
     response = await dispatch_request(session, http_method)(**params)
+    # print(f"{url_path}          {response.status}")
     return response
 
+@print_fn
 async def send_public_request(session, url_path, payload={}):
     query_string = urlencode(payload, True)
     url = BASE_URL + url_path
     if query_string:
         url = url + '?' + query_string
-    print("{}".format(url))
+    # print("{}".format(url))
     response = await dispatch_request(session, 'GET')(url=url)
+    # print(f"{url_path}          {response.status}")
     return response
 
 async def test_signed_request():
@@ -75,6 +85,7 @@ async def test_public_request():
 
 def test():
 
+    coroutines = []
     session = aiohttp.ClientSession()
     # get klines
     klines = send_public_request(session, '/api/v3/klines' , {"symbol": "BTCUSDT", "interval": "1d"})
@@ -120,24 +131,25 @@ def test():
     "type": 2
     }
     transfer = send_signed_request(session, 'POST', '/sapi/v1/futures/transfer', params)
-    session.close()
-
-    loop = asyncio.get_event_loop()
-
+    
+    # await asyncio.sleep(0.5)
     coroutines = [klines, account, order, sub_transfer, transfer]
-
+    
+    loop = asyncio.get_event_loop()
     loop.run_until_complete(asyncio.gather(*coroutines))
-
+    
+    session.close()
     
 
 
 if __name__ == '__main__':
+    test()
     # parser = argparse.ArgumentParser()
     # parser.add_argument('url', type=str)
     # args = parser.parse_args()
     # print(args.url)
     
-    test()
+    
 
 
 
