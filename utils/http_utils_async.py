@@ -13,6 +13,10 @@ API_KEY = config.API_KEY
 SECRET = config.SECRET_KEY
 BASE_URL = config.API_URL
 
+level = logging.DEBUG
+logging.basicConfig(level=level)
+logger = logging.getLogger(__name__)
+
 
 def _hashing(query_string):
     return hmac.new(SECRET.encode('utf-8'), 
@@ -36,6 +40,11 @@ def _dispatch_request(session, http_method):
     }.get(http_method, 'GET')
 
 
+def _debug_logs(*args):
+    logging.debug("\n")
+    for i in args:
+        logging.debug(i)
+
 async def send_signed_request(session, http_method, url_path, payload={}):
     query_string = urlencode(payload, True)
     if query_string:
@@ -43,32 +52,36 @@ async def send_signed_request(session, http_method, url_path, payload={}):
     else:
         query_string = 'timestamp={}'.format(_get_timestamp())
     hash_ = _hashing(query_string)
-    url = BASE_URL + url_path + '?' + query_string + '&signature=' + hash_
-    # url = f"{BASE_URL}{url_path}?{query_string}&signature={_hash}"
+    # url = BASE_URL + url_path + '?' + query_string + '&signature=' + hash_
+    url = f"{BASE_URL}{url_path}?{query_string}&signature={hash_}"
     params = {'url': url, 'params': {}}
-    response = await _dispatch_request(session, http_method)(**params)
-    logging.debug(response.status)
-    logging.debug(url_path)
-    logging.debug(response)
-    print(response.text())
-    # logging.debug(response.text())
-    return response
+    
+    func_ = _dispatch_request(session, http_method)
+    async with func_(**params) as response:
+
+        _debug_logs(response.status, url, url_path, 
+                    await response.read(), 
+                    #await response.text()
+                    )
+        return response
 
 
 async def send_public_request(session, url_path, payload={}):
     query_string = urlencode(payload, True)
-    url = BASE_URL + url_path
-    # url = f"{BASE_URL}{url_path}"
+    # url = BASE_URL + url_path
+    url = f"{BASE_URL}{url_path}"
     if query_string:
-        url = url + '?' + query_string
-        # url = f"{url}?{query_string}"
-    response = await _dispatch_request(session, 'GET')(url=url)
-    logging.debug(response.status)
-    logging.debug(url)
-    logging.debug(url_path)
-    print(response.text())
-    # logging.debug(response.text())
-    return response
+        # url = url + '?' + query_string
+        url = f"{url}?{query_string}"
+    
+    func_ = _dispatch_request(session, "GET")
+    async with func_(url=url) as response:
+
+        _debug_logs(response.status, url, url_path, 
+                    await response.read(), 
+                    #await response.text()
+                    )
+        return response
 
 
 
