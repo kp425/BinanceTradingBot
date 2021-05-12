@@ -63,7 +63,7 @@ async def send_signed_request(session, http_method, url_path, payload={}):
                     await response.read(), 
                     #await response.text()
                     )
-        return response
+    return response
 
 
 async def send_public_request(session, url_path, payload={}):
@@ -81,7 +81,7 @@ async def send_public_request(session, url_path, payload={}):
                     await response.read(), 
                     #await response.text()
                     )
-        return response
+    return response
 
 
 

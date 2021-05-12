@@ -3,7 +3,7 @@ import asyncio
 import aiohttp
 
 from utils import send_public_request, \
-            send_signed_request, live_data, run_test
+            send_signed_request, live_data
 
 import json
 import argparse
@@ -40,18 +40,24 @@ def set_logging_level(level):
     logger = logging.getLogger(__name__)
 
 
-
-
+def _debug_logs(*args):
+    logging.debug("\n")
+    for i in args:
+        logging.debug(i)
 
 
 async def system_status(session):
-    resp = send_public_request(session,
+    resp = await send_public_request(session,
                             '/wapi/v3/systemStatus.html')
+    _debug_logs(resp.status, await resp.read())
     return resp
 
 async def system_status_sapi(session):
-    resp = send_public_request(session,
+    # resp = send_public_request(session,
+    #                         '/sapi/v1/system/status')
+    resp = await send_public_request(session,
                             '/sapi/v1/system/status')
+    _debug_logs(resp.status, await resp.read())
     return resp
 
 
@@ -68,8 +74,9 @@ def main():
     args = parser.parse_args()
     set_logging_level(args.log)
     
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(testing())
+    asyncio.run(testing())
+    # loop = asyncio.get_event_loop()
+    # loop.run_until_complete(testing())
 
 
 
