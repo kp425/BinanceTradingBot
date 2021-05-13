@@ -1,32 +1,14 @@
-from utils import send_public_request, \
-            send_signed_request, live_data, setup_logging
-
+from settings import config
+import asyncio
+import aiohttp
 import json
 import argparse
 import logging
-
-def get_accountinfo():
-    r = send_signed_request("GET",'/api/v3/account')
-    print(r)
-
-
-def place_order():
-
-    params = {
-    "symbol": "BNBUSDT",
-    "side": "BUY",
-    "type": "LIMIT",
-    "timeInForce": "GTC",
-    "quantity": 1,
-    "price": "20",
-    "recWindow":"20000"
-    }
-    response = send_signed_request('POST', '/api/v3/order', params)
-    print(response)
+from lab import get_accountinfo, system_status, \
+                system_status_sapi, place_order
 
 
 def parse_arguments():
-
     parser = argparse.ArgumentParser()
     parser.add_argument("-log", 
                         "--log",
@@ -41,9 +23,19 @@ def parse_arguments():
 def main():
     parser = parse_arguments()
     args = parser.parse_args()
-    setup_logging(args.log)
+    if args.log:
+        log_level = args.log
+    else:
+        log_level = config.LOG_LEVEL
+    setup_logging(log_level)
+
+    with aiohttp.ClientSession() as session:
+
+        t = get_accountinfo(session)
+        
 
 
+    
 
 
 if __name__ == "__main__":

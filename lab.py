@@ -1,49 +1,20 @@
-
-import asyncio
-import aiohttp
-
 from utils import send_public_request, \
             send_signed_request, live_data
 
+import asyncio
 import json
 import argparse
 import logging
 
-def parse_arguments():
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-log", 
-                        "--log",
-                        default="warning",
-                        help=("Provide logging level. "
-                              "Example --log debug', default='warning'"))
-
-    return parser
-
-def set_logging_level(level):
-    levels = {
-    'critical': logging.CRITICAL,
-    'error': logging.ERROR,
-    'warn': logging.WARNING,
-    'warning': logging.WARNING,
-    'info': logging.INFO,
-    'debug': logging.DEBUG
-    }
-    level = levels.get(level.lower())
-
-    if level is None:
-        raise ValueError(
-        f"log level given: {options.log}"
-        f" -- must be one of: {' | '.join(levels.keys())}")
-    
-    logging.basicConfig(level=level)
-    logger = logging.getLogger(__name__)
-
 
 def _debug_logs(*args):
-    logging.debug("\n")
-    for i in args:
-        logging.debug(i)
+    pass
+
+def get_accountinfo(session):
+    coro = send_signed_request(session, "GET",
+                                '/api/v3/account')
+    task = asyncio.create_task(coro)
+    return task
 
 
 async def system_status(session):
@@ -61,27 +32,20 @@ async def system_status_sapi(session):
     return resp
 
 
-async def testing():
-    async with aiohttp.ClientSession() as session:
-        system_status(session)
-        system_status_sapi(session)
-
-    
-
-
-def main():
-    parser = parse_arguments()
-    args = parser.parse_args()
-    set_logging_level(args.log)
-    
-    asyncio.run(testing())
-    # loop = asyncio.get_event_loop()
-    # loop.run_until_complete(testing())
+def place_order(session):
+    params = {
+    "symbol": "BNBUSDT",
+    "side": "BUY",
+    "type": "LIMIT",
+    "timeInForce": "GTC",
+    "quantity": 1,
+    "price": "20",
+    "recWindow":"20000"
+    }
+    resp = await send_signed_request('POST', '/api/v3/order', params) 
+    return resp
 
 
-
-if __name__ == "__main__":
-    main()
 
 
 
