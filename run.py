@@ -1,5 +1,5 @@
 from utils import send_public_request, \
-            send_signed_request, live_data, run_test
+            send_signed_request, live_data, setup_logging
 
 import json
 import argparse
@@ -36,32 +36,13 @@ def parse_arguments():
 
     return parser
 
-def set_logging_level(level):
-    levels = {
-    'critical': logging.CRITICAL,
-    'error': logging.ERROR,
-    'warn': logging.WARNING,
-    'warning': logging.WARNING,
-    'info': logging.INFO,
-    'debug': logging.DEBUG
-    }
-    level = levels.get(level.lower())
 
-    if level is None:
-        raise ValueError(
-        f"log level given: {options.log}"
-        f" -- must be one of: {' | '.join(levels.keys())}")
-    
-    logging.basicConfig(level=level)
-
-    logger = logging.getLogger(__name__)
 
 def main():
-
     parser = parse_arguments()
     args = parser.parse_args()
-    set_logging_level(args.log)
-    run_test()
+    setup_logging(args.log)
+
 
 
 
