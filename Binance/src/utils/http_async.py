@@ -40,7 +40,8 @@ def _debug_logs(*args):
     for i in args:
         logging.debug(i)
 
-async def send_signed_request(session, http_method, url_path, payload={}):
+async def send_signed_request(session, http_method, url_path, payload={}, 
+                                                        return_type=None):
     query_string = urlencode(payload, True)
     if query_string:
         query_string = "{}&timestamp={}".format(query_string, _get_timestamp())
@@ -52,25 +53,45 @@ async def send_signed_request(session, http_method, url_path, payload={}):
     
     func_ = _dispatch_request(session, http_method)
     async with func_(**params) as response:
-        _debug_logs(response.status, url, url_path, 
-                    await response.read(), 
-                    #await response.text()
+        _debug_logs(response.status, url_path, url,
+                    # await response.json()
+                    # await response.read(), 
+                    # await response.text()
                     )
-    return response
+        if return_type is None:
+            resp = None
+        elif return_type == "json":
+            resp = await response.json()
+        elif return_type == "text":
+            resp = await response.text()
+        elif return_type == "bytes":
+            resp = await response.read()
+        
+    return resp
 
 
-async def send_public_request(session, url_path, payload={}):
+async def send_public_request(session, url_path, payload={}, return_type=None):
     query_string = urlencode(payload, True)
     url = f"{BASE_URL}{url_path}"
     if query_string:
         url = f"{url}?{query_string}"
     func_ = _dispatch_request(session, "GET")
     async with func_(url=url) as response:
-        _debug_logs(response.status, url, url_path, 
-                    await response.read(), 
+        _debug_logs(response.status, url_path, 
+                    # await response.json()
+                    # await response.read(), 
                     #await response.text()
                     )
-    return response
+        if return_type is None:
+            resp = None 
+        elif return_type == "json":
+            resp = await response.json()
+        elif return_type == "text":
+            resp = await response.text()
+        elif return_type == "bytes":
+            resp = await response.read()
+    return resp
+
 
 
 

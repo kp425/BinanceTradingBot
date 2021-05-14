@@ -6,7 +6,10 @@ from dotenv import load_dotenv
 class DevConfig:
     def __init__(self):
         self.env_path = os.path.join(dirname(__file__), 'env/dev.env')
-        load_dotenv(self.env_path)
+        if os.path.exists(self.env_path):
+            #this condition is to work in colab
+            #remove it
+            load_dotenv(self.env_path)
         self.API_KEY = os.environ.get("API_KEY")
         self.SECRET_KEY = os.environ.get("SECRET_KEY")
         self.API_URL = "https://testnet.binance.vision"

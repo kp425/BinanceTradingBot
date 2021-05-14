@@ -1,0 +1,15 @@
+version: "3.9"
+   
+services:
+  BinanceBot:
+    build:
+      context: Binance/
+      dockerfile: Dockerfile
+    image: binance-img
+    volumes:
+      - type: bind
+        source: ./Binance/src/
+        target: /Binance/src/
+    container_name: binance-container
+    env_file:
+      - env/dev.env
