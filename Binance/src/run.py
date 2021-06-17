@@ -4,17 +4,13 @@ import aiohttp
 import json
 import argparse
 import logging
-from utils import setup_logging
-# from lab import get_accountinfo, system_status, \
-#                 system_status_sapi, place_order, get_all_orders
+from utils.common import setup_logging, prettify, debug_logs
+from utils.http_async import send_public_request, send_signed_request
 
 from lab import *
 from api.accounts import *
 
 
-def prettify(json_):
-    json_ = json.dumps(json_, indent=2)
-    return json_
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
@@ -35,7 +31,8 @@ async def _main():
         # resp = await get_AccountInfo(session)       #working
         # resp = await get_MyTrades(session)        #working
         # resp = await get_MyAddress(session)
-        resp = await get_AllAssets(session)
+        # resp = await get_AllAssets(session)
+        resp = await place_order(session)
         logging.debug(resp)
         # logging.debug(prettify(resp))
         # return await asyncio.gather(*coroutines)

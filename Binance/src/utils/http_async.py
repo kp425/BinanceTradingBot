@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 import time
 from settings import config
 import logging
-from .common import setup_logging
+from .common import setup_logging, debug_logs
 
 API_KEY = config.API_KEY
 SECRET = config.SECRET_KEY
@@ -35,10 +35,7 @@ def _dispatch_request(session, http_method):
     }.get(http_method, 'GET')
 
 
-def _debug_logs(*args):
-    logging.debug("\n")
-    for i in args:
-        logging.debug(i)
+
 
 async def send_signed_request(session, http_method, url_path, payload={}, 
                                                         return_type=None):
@@ -53,7 +50,7 @@ async def send_signed_request(session, http_method, url_path, payload={},
     
     func_ = _dispatch_request(session, http_method)
     async with func_(**params) as response:
-        _debug_logs(response.status, url_path, url,
+        debug_logs(response.status, url_path, url,
                     # await response.json()
                     # await response.read(), 
                     # await response.text()
@@ -77,7 +74,7 @@ async def send_public_request(session, url_path, payload={}, return_type=None):
         url = f"{url}?{query_string}"
     func_ = _dispatch_request(session, "GET")
     async with func_(url=url) as response:
-        _debug_logs(response.status, url_path, 
+        debug_logs(response.status, url_path, 
                     # await response.json()
                     # await response.read(), 
                     #await response.text()

@@ -1,14 +1,13 @@
-from utils import send_public_request, \
-            send_signed_request, live_data
-
 import asyncio
 import json
 import argparse
 import logging
 
+from utils.http_async import send_public_request, \
+                            send_signed_request
+from utils.stream import get_LiveData
+from utils.common import setup_logging, prettify, debug_logs
 
-def _debug_logs(*args):
-    pass
 
 async def get_accountinfo(session):
     resp = await send_signed_request(session, "GET",
@@ -49,16 +48,28 @@ async def get_AllCoinInfo(session):
 
 
 async def place_order(session):
+    # params = {
+    # "symbol": "BNBUSDT",
+    # "side": "BUY",
+    # "type": "LIMIT",
+    # "timeInForce": "GTC",
+    # "quantity": 1,
+    # "price": "20",
+    # "recWindow":"20000"
+    # }
+
     params = {
-    "symbol": "BNBUSDT",
+    "symbol": "ETHBTC",
     "side": "BUY",
     "type": "LIMIT",
     "timeInForce": "GTC",
-    "quantity": 1,
-    "price": "20",
-    "recWindow":"20000"
+    "quantity": 0.001,
+    "price": "2000",
+    # "recWindow":"20000"
     }
-    resp = await send_signed_request('POST', '/api/v3/order', params) 
+
+    resp = await send_signed_request(session,'POST', '/api/v3/order', 
+                                                params, return_type="json") 
     return resp
 
 
@@ -70,21 +81,7 @@ async def get_all_orders(session):
     return resp
     
 
-async def get_AccountInfo(session):
-    resp = await send_signed_request(session,'GET',
-                                '/api/v3/account', return_type="json")
-    
-    return resp
 
-async def get_MyTrades(session):
-    params = {'symbol': 'LTCBNB'}
-    resp = await send_signed_request(session,'GET',
-                                '/api/v3/myTrades', params, return_type="json")
-    
-    return resp
-
-async def withdraw():
-    pass
 
 
 

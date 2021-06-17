@@ -1,5 +1,6 @@
 import functools
 import logging
+import json
 
 #prints asyc responses
 def print_fn(func):
@@ -32,3 +33,11 @@ def setup_logging(level):
     logger = logging.getLogger(__name__)
 
 
+def prettify(json_):
+    json_ = json.dumps(json_, indent=2)
+    return json_
+
+def debug_logs(*args):
+    logging.debug("\n")
+    for i in args:
+        logging.debug(i)
